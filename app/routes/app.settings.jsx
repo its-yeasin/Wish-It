@@ -11,18 +11,38 @@ import {
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useState } from "react";
 import { useLoaderData, Form } from "@remix-run/react";
+import prisma from "../db.server";
 
 export async function loader({ request }) {
+  const settings = await prisma?.settings?.findFirst();
+
   return Response.json({
-    name: "My Store",
-    description: "My Store Description",
+    name: settings?.name,
+    description: settings?.description,
   });
 }
 
 export async function action({ request }) {
-  const settings = await request.formData();
-  const object = Object.fromEntries(settings);
-  return Response.json(object);
+  let settings = await request.formData();
+  settings = Object.fromEntries(settings);
+
+  await prisma?.settings?.upsert({
+    where: {
+      id: "1",
+    },
+    update: {
+      id: "1",
+      name: settings?.name,
+      description: settings.description,
+    },
+    create: {
+      id: "1",
+      name: settings.name,
+      description: settings.description,
+    },
+  });
+
+  return Response.json(settings);
 }
 
 export default function SettingsPage() {
