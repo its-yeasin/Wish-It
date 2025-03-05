@@ -27,6 +27,15 @@
  
             addToWishlist() {
                 this.wishlisted = ! this.wishlisted
+
+                {% unless customer %}
+                  alert("You need to login to add this product to wishlist!");
+{% endunless %}
+
+{% if customer %}
+  alert("Product added to your wishlist!");
+{% endif %}
+               
             }
         }))
     })
