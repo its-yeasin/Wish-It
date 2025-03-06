@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import {
   Page,
   Layout,
@@ -13,14 +13,23 @@ import {
   InlineStack,
   LegacyCard,
   EmptyState,
+  DataTable,
 } from "@shopify/polaris";
 import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
+import prisma from "../db.server";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  const auth = await authenticate.admin(request);
+  const shop = auth.session.shop;
 
-  return null;
+  const wishlistData = await prisma.wishlist.findMany({
+    where: {
+      shop: shop,
+    },
+  });
+
+  return wishlistData;
 };
 
 export const action = async ({ request }) => {
@@ -89,42 +98,42 @@ export const action = async ({ request }) => {
 };
 
 export default function Index() {
-  const fetcher = useFetcher();
-  const shopify = useAppBridge();
-  const isLoading =
-    ["loading", "submitting"].includes(fetcher.state) &&
-    fetcher.formMethod === "POST";
-  const productId = fetcher.data?.product?.id.replace(
-    "gid://shopify/Product/",
-    "",
-  );
+  const data = useLoaderData();
 
-  useEffect(() => {
-    if (productId) {
-      shopify.toast.show("Product created");
-    }
-  }, [productId, shopify]);
-  const generateProduct = () => fetcher.submit({}, { method: "POST" });
+  console.log(data, "data----------------------------");
 
   return (
     <Page>
       <TitleBar title="Dashboard Overview" />
       <LegacyCard sectioned>
-        <EmptyState
-          heading="Wishlist Products"
-          action={{
-            content: "Add Product to Wishlist",
-            url: "https://anonymous-shop4u.myshopify.com/",
-            target: "_blank",
-          }}
-          secondaryAction={{
-            content: "Learn more",
-            url: "/app/settings",
-          }}
-          image="https://img.freepik.com/premium-vector/wishlist-icon-vector-image-can-be-used-web-store_120816-363114.jpg?w=100"
-        >
-          <p>Manage and track your wishlist products here.</p>
-        </EmptyState>
+        {data.length > 0 ? (
+          <div>
+            <Text variant="headingXl" as="h4">
+              Wishlist Products
+            </Text>
+            <DataTable
+              columnContentTypes={["numeric", "text", "text"]}
+              headings={["ID", "Customer ID", "Product ID"]}
+              rows={data.map((row) => [row.id, row.customerId, row.productId])}
+            />
+          </div>
+        ) : (
+          <EmptyState
+            heading="Wishlist Products"
+            action={{
+              content: "Add Product to Wishlist",
+              url: "https://anonymous-shop4u.myshopify.com/",
+              target: "_blank",
+            }}
+            secondaryAction={{
+              content: "Learn more",
+              url: "/app/settings",
+            }}
+            image="https://img.freepik.com/premium-vector/wishlist-icon-vector-image-can-be-used-web-store_120816-363114.jpg?w=100"
+          >
+            <p>Manage and track your wishlist products here.</p>
+          </EmptyState>
+        )}
       </LegacyCard>
     </Page>
   );
