@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "fe8afa8e52f5db258b464f7a45f424b4"
-application_url = "https://prefers-validity-front-beneficial.trycloudflare.com"
+application_url = "https://consultation-confidence-vast-villas.trycloudflare.com"
 embedded = true
 name = "wish-it"
 handle = "wish-it"
@@ -27,9 +27,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://prefers-validity-front-beneficial.trycloudflare.com/auth/callback",
-  "https://prefers-validity-front-beneficial.trycloudflare.com/auth/shopify/callback",
-  "https://prefers-validity-front-beneficial.trycloudflare.com/api/auth/callback"
+  "https://consultation-confidence-vast-villas.trycloudflare.com/auth/callback",
+  "https://consultation-confidence-vast-villas.trycloudflare.com/auth/shopify/callback",
+  "https://consultation-confidence-vast-villas.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

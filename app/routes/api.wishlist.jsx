@@ -2,13 +2,22 @@ import { cors } from "remix-utils/cors";
 import prisma from "../db.server";
 
 export const loader = async ({ request }) => {
-  return Response.json({ message: "Hello World", method: request.method });
+  const response = Response.json({
+    message: "Hello World",
+    method: request.method,
+  });
+  return cors(request, response);
 };
 
 export const action = async ({ request }) => {
   switch (request.method) {
     case "GET":
-      return Response.json({ message: "Hello World", method: request.method });
+      const getResponse = Response.json({
+        message: "Hello World",
+        method: request.method,
+      });
+      return cors(request, getResponse);
+
     case "POST":
       const method = request.method;
 
@@ -22,10 +31,11 @@ export const action = async ({ request }) => {
       console.log(data, "--------------------data");
 
       if (!customerId || !productId || !shop) {
-        return Response.json({
+        const errorResponse = Response.json({
           message: "Missing customerId or productId or shop",
           method,
         });
+        return cors(request, errorResponse);
       }
 
       const wishlist = await prisma.wishlist.create({
@@ -36,20 +46,39 @@ export const action = async ({ request }) => {
         },
       });
 
-      const response = Response.json({
+      const successResponse = Response.json({
         message: "Product added to wishlist successfully",
         data: wishlist,
       });
 
-      return cors(request, response);
+      return cors(request, successResponse);
+
     case "PUT":
-      return Response.json({ message: "Hello World", method: request.method });
+      const putResponse = Response.json({
+        message: "Hello World",
+        method: request.method,
+      });
+      return cors(request, putResponse);
+
     case "PATCH":
-      return Response.json({ message: "Hello World", method: request.method });
+      const patchResponse = Response.json({
+        message: "Hello World",
+        method: request.method,
+      });
+      return cors(request, patchResponse);
+
     case "DELETE":
-      return Response.json({ message: "Hello World", method: request.method });
+      const deleteResponse = Response.json({
+        message: "Hello World",
+        method: request.method,
+      });
+      return cors(request, deleteResponse);
 
     default:
-      return Response.json({ message: "Hello World", method: "DEFAULT" });
+      const defaultResponse = Response.json({
+        message: "Hello World",
+        method: "DEFAULT",
+      });
+      return cors(request, defaultResponse);
   }
 };

@@ -5,44 +5,69 @@
   <button style="color:{{ block.settings.colour }}" class="button-container" @click="addToWishlist()">
     {% comment %} ICON {% endcomment %}
     <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M25.5393 13.83C23.4993 20.28 14.8393 25.09 14.4693 25.29C14.3293 25.37 14.1593 25.41 13.9993 25.41C13.8293 25.41 13.6793 25.37 13.5393 25.29C13.1693 25.09 4.61926 20.37 2.48926 13.9H2.45926V13.82C1.13926 9.69004 2.62926 4.51004 7.38926 2.97004C9.60926 2.26004 12.0193 2.56004 13.9893 3.79004C15.9193 2.60004 18.4393 2.29004 20.5993 2.97004C25.3793 4.51004 26.8593 9.71004 25.5393 13.83Z" :fill="wishlisted ? 'red' : '#000'"/>
+      <path
+        d="M25.5393 13.83C23.4993 20.28 14.8393 25.09 14.4693 25.29C14.3293 25.37 14.1593 25.41 13.9993 25.41C13.8293 25.41 13.6793 25.37 13.5393 25.29C13.1693 25.09 4.61926 20.37 2.48926 13.9H2.45926V13.82C1.13926 9.69004 2.62926 4.51004 7.38926 2.97004C9.60926 2.26004 12.0193 2.56004 13.9893 3.79004C15.9193 2.60004 18.4393 2.29004 20.5993 2.97004C25.3793 4.51004 26.8593 9.71004 25.5393 13.83Z"
+        :fill="wishlisted ? 'red' : '#000'" />
     </svg>
     {% comment %} Label {% endcomment %}
     {{ block.settings.label}}
-</button>
+  </button>
 </div>
 
 {% if avg_rating >= 4 %}
-  <br>
-  <img src="{{ "thumbs-up.png" | asset_img_url: '15x' }}" height="15" width="15" loading="lazy">
-  {{ 'ratings.home.recommendationText' | t }}
+<br>
+<img src="{{ " thumbs-up.png" | asset_img_url: '15x' }}" height="15" width="15" loading="lazy">
+{{ 'ratings.home.recommendationText' | t }}
 {% endif %}
 
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 <script>
   document.addEventListener('alpine:init', () => {
-        Alpine.data('wishlist', () => ({
-            wishlisted: false,
- 
-            addToWishlist() {
-                this.wishlisted = ! this.wishlisted
+    Alpine.data('wishlist', () => ({
+      wishlisted: false,
 
-                {% unless customer %}
-                  alert("You need to login to add this product to wishlist!");
-{% endunless %}
+      // apiUrl: "https://upgrades-lee-lease-delays.trycloudflare.com/api/wishlist";
 
-{% if customer %}
-  alert("Product added to your wishlist!");
-{% endif %}
-               
-            }
-        }))
-    })
+      addToWishlist() {
+
+
+        {% unless customer %}
+        alert("You need to login to add this product to wishlist!");
+        {% endunless %}
+
+        {% if customer %}
+        const apiUrl = "https://consultation-confidence-vast-villas.trycloudflare.com"
+        const formData = new FormData();
+        formData.append('customerId', "{{ customer.id }}")
+        formData.append('productId', "{{ product.id }}")
+        formData.append('shop', "{{ shop.permanent_domain }}")
+
+        const requestOptions = {
+          method: "POST",
+          body: formData,
+          redirect: "follow"
+        };
+
+        fetch(`${apiUrl}/api/wishlist`, requestOptions)
+          .then((response) => response.text())
+          .then((result) => {
+            this.wishlisted = !this.wishlisted
+            console.log(result)
+          })
+          .catch((error) => console.log(error?.message));
+
+
+
+        {% endif %}
+
+      }
+    }))
+  })
 </script>
 
 <style>
-  button{
+  button {
     background: none;
     border: none;
     cursor: pointer;
@@ -56,15 +81,18 @@
     height: 20px;
     margin-right: 5px;
   }
+
   .lucide-shopping-cart {
     width: 15px;
     height: 15px;
     margin-right: 5px;
   }
+
   .star-rating {
     display: flex;
     align-items: center;
   }
+
   .star-rating img {
     margin-right: 5px;
   }
@@ -72,17 +100,16 @@
 
 {% schema %}
 {
-  "name": "Star Rating",
-  "target": "section",
-  "settings": [
-    { "type": "product", "id": "product", "label": "product", "autofill": true },
-    { 
-      "type": "text", 
-    "id": "label", 
-    "label": "Button Label", 
-    "default": "Add+" },
-    { "type": "color", "id": "colour", "label": "Star Colour", "default": "#ff0000" }
-  ]
+"name": "Star Rating",
+"target": "section",
+"settings": [
+{ "type": "product", "id": "product", "label": "product", "autofill": true },
+{
+"type": "text",
+"id": "label",
+"label": "Button Label",
+"default": "Add+" },
+{ "type": "color", "id": "colour", "label": "Star Colour", "default": "#ff0000" }
+]
 }
 {% endschema %}
-
