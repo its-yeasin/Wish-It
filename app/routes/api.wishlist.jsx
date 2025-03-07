@@ -2,9 +2,30 @@ import { cors } from "remix-utils/cors";
 import prisma from "../db.server";
 
 export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+  const customerId = url.searchParams.get("customerId");
+  const productId = url.searchParams.get("productId");
+  const shop = url.searchParams.get("shop");
+
+  if (!customerId || !productId || !shop) {
+    const errorResponse = Response.json({
+      message: "Missing customerId or productId or shop",
+      data: null,
+    });
+    return cors(request, errorResponse);
+  }
+
+  const wishlistData = await prisma.wishlist.findMany({
+    where: {
+      customerId,
+      productId,
+      shop,
+    },
+  });
+
   const response = Response.json({
-    message: "Hello World",
-    method: request.method,
+    message: "Wishlist data retrieved successfully",
+    data: wishlistData,
   });
   return cors(request, response);
 };

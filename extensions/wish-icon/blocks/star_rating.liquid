@@ -26,8 +26,18 @@
   document.addEventListener('alpine:init', () => {
     Alpine.data('wishlist', () => ({
       wishlisted: false,
+      apiUrl: "https://housing-collected-always-fair.trycloudflare.com",
 
-      // apiUrl: "https://upgrades-lee-lease-delays.trycloudflare.com/api/wishlist";
+      init() {
+        fetch(`${this.apiUrl}/api/wishlist?customerId={{ customer.id }}&productId={{ product.id }}&shop={{ shop.permanent_domain }}`)
+          .then((res) => res.json())
+          .then((result) => {
+            if (result.data.length > 0) {
+              this.wishlisted = true
+            }
+          })
+          .catch((err) => console.error(err))
+      },
 
       addToWishlist() {
 
@@ -37,11 +47,18 @@
         {% endunless %}
 
         {% if customer %}
-        const apiUrl = "https://ancient-if-ec-jean.trycloudflare.com"
+        // const apiUrl = "https://ancient-if-ec-jean.trycloudflare.com"
         const formData = new FormData();
         formData.append('customerId', "{{ customer.id }}")
         formData.append('productId', "{{ product.id }}")
         formData.append('shop', "{{ shop.permanent_domain }}")
+
+        if (this.wishlisted !== true) {
+          formData.append('_action', 'CREATE')
+        } else {
+          formData.append('_action', 'DELETE')
+        }
+
 
         const requestOptions = {
           method: "POST",
@@ -49,11 +66,10 @@
           redirect: "follow"
         };
 
-        fetch(`${apiUrl}/api/wishlist`, requestOptions)
+        fetch(`${this.apiUrl}/api/wishlist`, requestOptions)
           .then((response) => response.text())
           .then((result) => {
             this.wishlisted = !this.wishlisted
-            console.log(result)
           })
           .catch((error) => console.log(error?.message));
 
