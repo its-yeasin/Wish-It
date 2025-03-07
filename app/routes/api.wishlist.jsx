@@ -11,13 +11,6 @@ export const loader = async ({ request }) => {
 
 export const action = async ({ request }) => {
   switch (request.method) {
-    case "GET":
-      const getResponse = Response.json({
-        message: "Hello World",
-        method: request.method,
-      });
-      return cors(request, getResponse);
-
     case "POST":
       const method = request.method;
 
@@ -27,58 +20,54 @@ export const action = async ({ request }) => {
       const customerId = data.customerId;
       const productId = data.productId;
       const shop = data.shop;
+      const action = data._action;
 
-      console.log(data, "--------------------data");
+      switch (action) {
+        case "CREATE":
+          if (!customerId || !productId || !shop) {
+            const errorResponse = Response.json({
+              message: "Missing customerId or productId or shop",
+              method,
+            });
+            return cors(request, errorResponse);
+          }
 
-      if (!customerId || !productId || !shop) {
-        const errorResponse = Response.json({
-          message: "Missing customerId or productId or shop",
-          method,
-        });
-        return cors(request, errorResponse);
+          const wishlist = await prisma.wishlist.create({
+            data: {
+              customerId,
+              productId,
+              shop,
+            },
+          });
+
+          const createResponse = Response.json({
+            message: "Product added to wishlist successfully",
+            data: wishlist,
+          });
+
+          return cors(request, createResponse);
+        case "UPDATE":
+          return "updated";
+        case "DELETE":
+          const deletedWishlist = await prisma.wishlist.deleteMany({
+            where: {
+              customerId,
+              productId,
+              shop,
+            },
+          });
+
+          const deleteResponse = Response.json({
+            message: "Product deleted successfully",
+            data: deletedWishlist,
+          });
+
+          return cors(request, deleteResponse);
+        default:
+          return cors(request, {
+            message: "No method mentioned",
+            data: null,
+          });
       }
-
-      const wishlist = await prisma.wishlist.create({
-        data: {
-          customerId,
-          productId,
-          shop,
-        },
-      });
-
-      const successResponse = Response.json({
-        message: "Product added to wishlist successfully",
-        data: wishlist,
-      });
-
-      return cors(request, successResponse);
-
-    case "PUT":
-      const putResponse = Response.json({
-        message: "Hello World",
-        method: request.method,
-      });
-      return cors(request, putResponse);
-
-    case "PATCH":
-      const patchResponse = Response.json({
-        message: "Hello World",
-        method: request.method,
-      });
-      return cors(request, patchResponse);
-
-    case "DELETE":
-      const deleteResponse = Response.json({
-        message: "Hello World",
-        method: request.method,
-      });
-      return cors(request, deleteResponse);
-
-    default:
-      const defaultResponse = Response.json({
-        message: "Hello World",
-        method: "DEFAULT",
-      });
-      return cors(request, defaultResponse);
   }
 };
