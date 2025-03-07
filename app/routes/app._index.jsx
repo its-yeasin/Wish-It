@@ -100,15 +100,13 @@ export const action = async ({ request }) => {
 export default function Index() {
   const data = useLoaderData();
 
-  console.log(data, "data----------------------------");
-
   return (
     <Page>
       <TitleBar title="Dashboard Overview" />
       <LegacyCard sectioned>
         {data.length > 0 ? (
           <div>
-            <Text variant="headingXl" as="h4">
+            <Text variant="headingLg" as="h5">
               Wishlist Products
             </Text>
             <DataTable
@@ -116,6 +114,16 @@ export default function Index() {
               headings={["ID", "Customer ID", "Product ID"]}
               rows={data.map((row) => [row.id, row.customerId, row.productId])}
             />
+
+            <div className="flex justify-end mt-4">
+              <Button
+                variant="primary"
+                url="https://anonymous-shop4u.myshopify.com/"
+                target="_blank"
+              >
+                Add More +
+              </Button>
+            </div>
           </div>
         ) : (
           <EmptyState
