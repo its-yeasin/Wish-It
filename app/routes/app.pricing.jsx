@@ -1,39 +1,127 @@
-import { BlockStack, Button, Card, Layout, Page, Text } from "@shopify/polaris";
+import {
+  Page,
+  Grid,
+  LegacyCard,
+  Text,
+  Badge,
+  Button,
+  List,
+} from "@shopify/polaris";
+import { ANNUAL_PLAN, authenticate, MONTHLY_PLAN } from "../shopify.server";
+import { useLoaderData } from "@remix-run/react";
+
+export const loader = async ({ request }) => {
+  try {
+    const { billing } = await authenticate.admin(request);
+    const { appSubscriptions } = await billing.check({
+      plans: [MONTHLY_PLAN, ANNUAL_PLAN],
+      isTest: true,
+    });
+    // console.log(hasActivePayment);
+    console.log(
+      "Start++++++++++++",
+      appSubscriptions,
+      "check+++++++++++++++++++++++++++++",
+    );
+
+    const plan = appSubscriptions?.[0];
+
+    if (appSubscriptions.length === 0) {
+      // Indicating free plan
+      throw new Error("FREE");
+    }
+
+    return Response.json({ billing, plan: { ...plan, isFree: false } });
+  } catch (err) {
+    // Check if free plan
+    if (err.message === "FREE") {
+      return Response.json({
+        billing: {},
+        plan: {
+          name: "Free Plan",
+          isFree: true,
+        },
+      });
+    }
+  }
+};
 
 export default function PricingPage() {
-  return (
-    <Page title="Pricing Plans">
-      <Layout>
-        {/* First Column */}
-        <Layout.Section oneHalf>
-          <Card title="Basic Plan" sectioned>
-            <BlockStack spacing="tight">
-              <Text as="h2" variant="headingMd">
-                $19/month
-              </Text>
-              <Text as="p">✅ 10 Products</Text>
-              <Text as="p">✅ Basic Support</Text>
-              <Text as="p">✅ 1 Admin Account</Text>
-              <Button primary>Choose Plan</Button>
-            </BlockStack>
-          </Card>
-        </Layout.Section>
+  const { plan } = useLoaderData();
+  const isFree = plan.isFree;
 
-        {/* Second Column */}
-        <Layout.Section oneHalf>
-          <Card title="Pro Plan" sectioned>
-            <BlockStack spacing="tight">
-              <Text as="h2" variant="headingMd">
-                $49/month
+  return (
+    <Page title="Choose Your Plan">
+      <Grid>
+        {/* Free Plan */}
+        <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 6, xl: 6 }}>
+          <LegacyCard sectioned>
+            <Text variant="headingLg" as="h2">
+              Free Plan
+            </Text>
+
+            <Badge status="success">Free Forever</Badge>
+
+            <Text variant="bodyMd" color="subdued">
+              Perfect for individuals or small teams just getting started.
+            </Text>
+
+            <Text variant="heading2xl" as="h3">
+              $0{" "}
+              <Text variant="bodyMd" color="subdued">
+                / month
               </Text>
-              <Text as="p">✅ Unlimited Products</Text>
-              <Text as="p">✅ Priority Support</Text>
-              <Text as="p">✅ 5 Admin Accounts</Text>
-              <Button primary>Choose Plan</Button>
-            </BlockStack>
-          </Card>
-        </Layout.Section>
-      </Layout>
+            </Text>
+
+            <List type="bullet">
+              <List.Item>Basic analytics</List.Item>
+              <List.Item>Limited reports</List.Item>
+              <List.Item>Email support</List.Item>
+            </List>
+
+            {isFree && (
+              <Button fullWidth primary url="/app">
+                Upgrade to pro
+              </Button>
+            )}
+          </LegacyCard>
+        </Grid.Cell>
+
+        {/* Pro Plan */}
+        <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 6, xl: 6 }}>
+          <LegacyCard sectioned>
+            <Text variant="headingLg" as="h2">
+              Pro Plan
+            </Text>
+
+            <Badge status="info">Most Popular</Badge>
+
+            <Text variant="bodyMd" color="subdued">
+              Advanced features for growing businesses.
+            </Text>
+
+            <Text variant="heading2xl" as="h3">
+              $49{" "}
+              <Text variant="bodyMd" color="subdued">
+                / month
+              </Text>
+            </Text>
+
+            <List type="bullet">
+              <List.Item>Advanced analytics</List.Item>
+              <List.Item>Unlimited reports</List.Item>
+              <List.Item>Priority support</List.Item>
+              <List.Item>Custom integrations</List.Item>
+            </List>
+
+            {isFree && (
+              <Button fullWidth primary tone="success" url="/app/upgrade">
+                Upgrade Now
+              </Button>
+            )}
+          </LegacyCard>
+        </Grid.Cell>
+      </Grid>
     </Page>
   );
 }
