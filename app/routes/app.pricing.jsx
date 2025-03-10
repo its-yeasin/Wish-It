@@ -30,7 +30,7 @@ export const loader = async ({ request }) => {
       // Indicating free plan
       throw new Error("FREE");
     }
-
+    console.log("ok");
     return Response.json({ billing, plan: { ...plan, isFree: false } });
   } catch (err) {
     // Check if free plan
